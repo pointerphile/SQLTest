@@ -20,6 +20,20 @@ SQLHENV hEnv;
 SQLHDBC hDBC;
 SQLHSTMT hSTMT;
 
+static void extract_error(const char *fn, SQLHANDLE handle, SQLSMALLINT handletype) {
+
+	SQLWCHAR sqlstate[1024];
+	SQLWCHAR message[1024];
+
+	if (SQL_SUCCESS == SQLGetDiagRec(handletype, handle, 1, sqlstate, NULL, message, 1024, NULL)) {
+		std::cout << "Message: ";
+		std::wcout << message;
+		std::cout << " nSQLSTATE: ";
+		std::wcout << sqlstate;
+		std::cout << std::endl;
+	}
+}
+
 int main(int argc, char* argv[]) {
 	TCHAR InCon[255];
 	Tstring tInCon;
@@ -37,11 +51,14 @@ int main(int argc, char* argv[]) {
 	if (SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDBC) != SQL_SUCCESS)
 		return -1;
 
-	tInCon = _T("Driver={SQL Server}; SERVER=localhost; DATABASE=testDB; Network=dbmssocn; UID = sa; PWD = kgca!@34;");
+	tInCon = _T("Driver={SQL Server}; SERVER=192.168.0.47, 1433; DATABASE=testDB; Network=dbmssocn; UID=sa; PWD=kgca!@34;");
 	Ret = SQLDriverConnect(hDBC, NULL, (SQLTCHAR*)tInCon.c_str(), (SQLSMALLINT)tInCon.length(), OutCon,
 		_countof(OutCon), &cbOutCon, SQL_DRIVER_NOPROMPT);
-	if ((Ret != SQL_SUCCESS) && (Ret != SQL_SUCCESS_WITH_INFO))
+	if ((Ret != SQL_SUCCESS) && (Ret != SQL_SUCCESS_WITH_INFO)) {
+		extract_error("SQLDriverConnect", hDBC, SQL_HANDLE_DBC);
+		system("pause");
 		return -1;
+	}
 
 	if (SQLAllocHandle(SQL_HANDLE_STMT, hDBC, &hSTMT) != SQL_SUCCESS)
 		return -1;
@@ -71,4 +88,4 @@ int main(int argc, char* argv[]) {
 	system("pause");
 
 	return 0;
-} 
+}
