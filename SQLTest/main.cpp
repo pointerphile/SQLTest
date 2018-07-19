@@ -5,6 +5,7 @@
 #include <sqlext.h>
 #include <tchar.h>
 #include <stdio.h>
+#include <locale>
 
 #ifdef UNICODE
 #define Tcout wcout
@@ -27,7 +28,7 @@ int main(int argc, char* argv[]) {
 	TCHAR Dir[MAX_PATH];
 	SQLRETURN Ret;
 
-	std::wcout.imbue(std::locale("kor"));
+	std::locale::global(std::locale("Korean"));
 
 	if (SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &hEnv) != SQL_SUCCESS)
 		return -1;
@@ -45,19 +46,21 @@ int main(int argc, char* argv[]) {
 	if (SQLAllocHandle(SQL_HANDLE_STMT, hDBC, &hSTMT) != SQL_SUCCESS)
 		return -1;
 
-	SQLTCHAR Name[21];
+	SQLTCHAR Name[11];
 	SQLLEN lName;
+	SQLINTEGER iPrice;
 
 	SQLBindCol(hSTMT, 1, SQL_C_TCHAR, Name, sizeof(Name), &lName);
+	SQLBindCol(hSTMT, 2, SQL_C_ULONG, &iPrice, sizeof(iPrice), nullptr);
 
 	// SQL문을 실행한다.
-	if (SQLExecDirect(hSTMT, (SQLTCHAR *)_T("select name from tblCigar"), SQL_NTS) != SQL_SUCCESS) {
+	if (SQLExecDirect(hSTMT, (SQLTCHAR *)_T("select * from tblCigar"), SQL_NTS) != SQL_SUCCESS) {
 		return FALSE;
 	}
 
 	// 읽어온 데이터 출력
 	while (SQLFetch(hSTMT) != SQL_NO_DATA) {
-		std::Tcout << Name << std::endl;
+		std::Tcout << "\t" << Name << "\t" << "\t" << iPrice << std::endl;
 	}
 
 	if (hSTMT) SQLCloseCursor(hSTMT);
