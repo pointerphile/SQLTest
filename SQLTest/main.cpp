@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 	if (SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDBC) != SQL_SUCCESS)
 		return -1;
 
-	tInCon = _T("Driver={SQL Server}; SERVER=192.168.0.47, 1433; DATABASE=testDB; Network=dbmssocn; UID=sa; PWD=kgca!@34;");
+	tInCon = _T("Driver={SQL Server}; SERVER=127.0.0.1, 1433; DATABASE=testDB; Network=dbmssocn; UID=sa; PWD=kgca!@34;");
 	Ret = SQLDriverConnect(hDBC, NULL, (SQLTCHAR*)tInCon.c_str(), (SQLSMALLINT)tInCon.length(), OutCon,
 		_countof(OutCon), &cbOutCon, SQL_DRIVER_NOPROMPT);
 	if ((Ret != SQL_SUCCESS) && (Ret != SQL_SUCCESS_WITH_INFO)) {
@@ -63,21 +63,28 @@ int main(int argc, char* argv[]) {
 	if (SQLAllocHandle(SQL_HANDLE_STMT, hDBC, &hSTMT) != SQL_SUCCESS)
 		return -1;
 
-	SQLTCHAR Name[11];
-	SQLLEN lName;
-	SQLINTEGER iPrice;
+	SQLWCHAR username[16];
+	SQLLEN lUsername;
+	SQLCHAR password[50];
+	SQLLEN lPassword;
+	SQLINTEGER iReturn = 0;
 
-	SQLBindCol(hSTMT, 1, SQL_C_TCHAR, Name, sizeof(Name), &lName);
-	SQLBindCol(hSTMT, 2, SQL_C_ULONG, &iPrice, sizeof(iPrice), nullptr);
+	SQLBindCol(hSTMT, 1, SQL_C_WCHAR, username, sizeof(username), &lUsername);
+	SQLBindCol(hSTMT, 2, SQL_C_BINARY, &password, sizeof(password), &lPassword);
+
+	SQLBindParameter(hSTMT, 1, SQL_PARAM_OUTPUT, sql_c_)
 
 	// SQL문을 실행한다.
-	if (SQLExecDirect(hSTMT, (SQLTCHAR *)_T("select * from tblCigar"), SQL_NTS) != SQL_SUCCESS) {
+	if (SQLExecDirect(hSTMT, (SQLTCHAR *)_T("call uspSignUp('test', '1234')"), SQL_NTS) != SQL_SUCCESS) {
+		return FALSE;
+	}
+	if (SQLExecDirect(hSTMT, (SQLTCHAR *)_T("select * from testTable"), SQL_NTS) != SQL_SUCCESS) {
 		return FALSE;
 	}
 
 	// 읽어온 데이터 출력
 	while (SQLFetch(hSTMT) != SQL_NO_DATA) {
-		std::Tcout << "\t" << Name << "\t" << "\t" << iPrice << std::endl;
+		std::Tcout << "\t" << username << "\t" << "\t" << password << std::endl;
 	}
 
 	if (hSTMT) SQLCloseCursor(hSTMT);
