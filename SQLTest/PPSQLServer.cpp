@@ -108,6 +108,8 @@ int PPSQLServer::Run()
 				std::wstring wstrRetypePassword;
 				SQLWCHAR username[17];
 				SQLLEN lUsername = SQL_NTS;
+				SQLWCHAR newusername[17];
+				SQLLEN lnewUsername = SQL_NTS;
 				SQLWCHAR password[17];
 				SQLLEN lPassword = SQL_NTS;
 				SWORD sParm1 = 0;
@@ -133,7 +135,6 @@ int PPSQLServer::Run()
 					SQLBindParameter(hSTMT, 1, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, 16, 0, &username, wstrUsername.length(), &lUsername);
 					SQLBindParameter(hSTMT, 2, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, 16, 0, &password, wstrPassword.length(), &lPassword);
 					SQLBindParameter(hSTMT, 3, SQL_PARAM_OUTPUT, SQL_C_SSHORT, SQL_INTEGER, 0, 0, &sParm1, 0, nullptr);
-
 					retcode = SQLExecDirect(hSTMT, (SQLTCHAR *)_T("{CALL usp_SignIn (?, ?, ?)}"), SQL_NTS);
 					if ((retcode != SQL_SUCCESS) && (retcode != SQL_SUCCESS_WITH_INFO)) {
 						std::cout << "Failed... " << std::endl;
@@ -145,6 +146,19 @@ int PPSQLServer::Run()
 					else {
 						std::cout << "Enter your new Username: ";
 						std::wcin >> wstrNewUsername;
+						wcscpy(newusername, wstrNewUsername.c_str());
+
+						SQLBindParameter(hSTMT, 1, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, 16, 0, &username, wstrUsername.length(), &lUsername);
+						SQLBindParameter(hSTMT, 2, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, 16, 0, &newusername, wstrNewUsername.length(), &lnewUsername);
+						retcode = SQLExecDirect(hSTMT, (SQLTCHAR *)_T("{CALL usp_UpdateUsername (?, ?)}"), SQL_NTS);
+						if ((retcode != SQL_SUCCESS) && (retcode != SQL_SUCCESS_WITH_INFO)) {
+							std::cout << "Failed... " << std::endl;
+							break;
+						}
+						else {
+							std::cout << "Username Updated... " << std::endl;
+							break;
+						}
 					}
 				}
 
