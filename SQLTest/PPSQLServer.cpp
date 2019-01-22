@@ -13,7 +13,7 @@ int PPSQLServer::Init()
 	if (SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDBC) != SQL_SUCCESS)
 		return -1;
 
-	wInCon = _T("Driver={SQL Server}; SERVER=192.168.0.110, 1433; DATABASE=testDB; Network=dbmssocn; UID=sa; PWD=kgca!@34;");
+	wInCon = _T("Driver={SQL Server}; SERVER=127.0.0.1, 1433; DATABASE=testDB; Network=dbmssocn; UID=sa; PWD=kgca!@34;");
 	Ret = SQLDriverConnect(hDBC, NULL, (SQLTCHAR*)wInCon.c_str(), (SQLSMALLINT)wInCon.length(), OutCon,
 		_countof(OutCon), &cbOutCon, SQL_DRIVER_NOPROMPT);
 	if ((Ret != SQL_SUCCESS) && (Ret != SQL_SUCCESS_WITH_INFO)) {
